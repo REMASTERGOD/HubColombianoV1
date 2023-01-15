@@ -1,0 +1,1800 @@
+local Players = game.Players --aim fov float addslider tringy color AddColorpicker Rust
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+
+local Window = OrionLib:MakeWindow({Name = "Trident Survival Script", IntroEnabled = true, HidePremium = false, SaveConfig = false, ConfigFolder = "OrionTest"})
+
+local Tab3 = Window:MakeTab({
+	Name = "Inicio",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Tab = Window:MakeTab({
+	Name = "Visuales",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Tab2 = Window:MakeTab({
+	Name = "Configuraciones",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local KeyTab = Window:MakeTab({
+	Name = "Atajos",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local RiskyTab = Window:MakeTab({
+	Name = "Forsar Hit",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Extra = Window:MakeTab({
+	Name = "Mas",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+-- notificasion --
+
+OrionLib:MakeNotification({
+	Name = "Cargando Script!!",
+	Content = "Creado Por Ghosstle y Juanchomo",
+	Image = "rbxassetid://4483345998",
+	Time = 30
+})
+
+local function WindowHighlight()
+    for i,v in pairs(workspace:GetChildren()) do
+        local Union = v:FindFirstChild("Union")
+        if Union and Union:IsA("BasePart") and Union.Size == Vector3.new(8.75, 4.25, 0.75) then
+            local Highlight = Instance.new("Highlight")
+            Highlight.Parent = v
+        end
+    end
+end
+
+local function RemoveWindowHighlight()
+    for i,v in pairs(workspace:GetChildren()) do
+        local Union = v:FindFirstChild("Union")
+        if Union and Union:IsA("BasePart") and Union.Size == Vector3.new(8.75, 4.25, 0.75) and v:FindFirstChildOfClass("Highlight") then
+            v:FindFirstChildOfClass("Highlight"):Destroy()
+        end
+    end
+end
+
+local BoostOn = false
+
+Extra:AddButton({
+	Name = "No Leaves",
+	Callback = function()
+      		if BoostOn == false then
+                BoostOn = true
+                local success, errormessage = pcall(function()
+                    for v, i in pairs(game:GetService("Workspace"):GetChildren()) do
+                        if i:FindFirstChild("Part") then
+                            if i:FindFirstChild("top") then
+                                i.top:Remove()
+                            else
+                                for x,b in pairs(i:GetChildren()) do
+                                    if b.ClassName == "MeshPart" and b.MeshId == "rbxassetid://743205322" then
+                                        b:Remove()
+                                    end
+                                end
+                            end
+                        end
+                    end
+                
+                    workspace.ChildAdded:Connect(function(child)
+                        if child:FindFirstChild("Part") then
+                            if child:FindFirstChild("top") then
+                                child.top:Destroy()
+                            else
+                                for x,b in pairs(child:GetChildren()) do
+                                    if b.ClassName == "MeshPart" and b.MeshId == "rbxassetid://743205322" then
+                                        b:Destroy()
+                                    end
+                                end
+                            end 
+                        end
+                    end)
+                end)
+                
+                if not success then
+                    print(errormessage)
+                end
+            end
+  	end    
+})
+
+Extra:AddButton({
+	Name = "No Shadows",
+	Callback = function()
+        game:GetService("Lighting").GlobalShadows = false       
+  	end    
+})
+
+Extra:AddButton({
+	Name = "No Grass",
+	Callback = function()
+        sethiddenprop(workspace.Terrain, "Decoration", false)        
+  	end    
+})
+
+--[[
+Name = <string> - The name of the button.
+Callback = <function> - The function of the button.
+]]
+
+-- Variables -- //
+
+local SpinSpeed = 1
+local AimbotSensitivity = 1
+local TeleportDistance = 1.5
+local HitboxRefreshTime = 5
+local SelectedFOV = 140
+local SelectedZoom = 20
+local SlideSpeed = 15
+local SlideBoost = true
+local PlayerEspOn = true
+local AimbotEnabled = true
+local OreEspEnabled = true
+local HitboxEnabled = true
+local AllHeadsEnabled = true
+local NotAllHeadShots = true
+local BackpackEspEnabled = true
+local FlyOn = true
+local OreOn = true
+local CrouchAlways = true
+local SlideAlways = true
+local CrosshairOn = true
+local SpinIsOn = true
+local AutoReloadOn = true
+local CustomTerrainColor = true
+local CustomArmColor = true
+local CustomGunColor = true
+local FPSBooster = true
+local WallEspOn = true
+local FPSArms = workspace.Ignore.FPSArms
+
+local BoostLoop = nil
+
+Extra:AddToggle({
+	Name = "Crosshair V1",
+	Default = false,
+	Callback = function(Value)
+	end    
+})
+
+Extra:AddToggle({
+	Name = "FPS Booster (MIGHT give more fps.)",
+	Default = false,
+	Callback = function(Value)
+        FPSBooster = Value
+        if FPSBooster == false then
+            pcall(function()
+                BoostLoop:Disconnect()
+            end)
+        else
+            for i,v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Texture") then
+                    v:Destroy()
+                end
+                if v:IsA("Decal") or v:IsA("ParticleEmitter") then
+                    v:Destroy()
+                end
+                if v:IsA("BasePart") then
+                    v.Material = Enum.Material.SmoothPlastic
+                end
+            end
+
+            BoostLoop = workspace.DescendantAdded:Connect(function(child)
+                if not child:IsDescendantOf(workspace.Ignore) and child:IsA("Explosion") or child:IsA("Fire") or child:IsA("SpotLight") or child:IsA("PointLight") or child:IsA("SurfaceLight") or child:IsA("Smoke") or child:IsA("Texture") or child:IsA("Decal") or child:IsA("ParticleEmitter") or tostring(child) == "top" or child.ClassName == "MeshPart" and child.MeshId == "rbxassetid://743205322" then
+                    child:Destroy()
+                elseif not child:IsDescendantOf(workspace.Ignore) and child:IsA("BasePart") and not child:IsA("MeshPart") then
+                    child.Material = Enum.Material.SmoothPlastic
+                elseif not child:IsDescendantOf(workspace.Ignore) and child:IsA("MeshPart") then
+                    pcall(function()
+                        child.Material = Enum.Material.SmoothPlastic
+                        child.MeshId = nil
+                    end)
+                end
+            end) 
+        end
+	end    
+})
+
+Tab3:AddToggle({
+	Name = "Bow and Blunderbuss AutoReload",
+	Default = false,
+	Callback = function(Value)
+		AutoReloadOn = Value
+	end    
+})
+
+local FirstExecution = false
+
+Tab:AddToggle({
+	Name = "Custom Terrain Color",
+	Default = false,
+	Callback = function(Value)
+		CustomTerrainColor = Value
+
+        if CustomTerrainColor and not FirstExecution then
+            FirstExecution = true
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Grass, Color3.fromRGB(232,156,74))
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Basalt, Color3.fromRGB(232,156,74))
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Asphalt, Color3.fromRGB(232,156,74))
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Sand, Color3.fromRGB(232,156,74))
+        elseif FirstExecution and CustomTerrainColor then
+
+        elseif not CustomTerrainColor then
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Grass, Color3.fromRGB(75.00000312924385,139.0000069141388,59.00000028312206))
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Basalt, Color3.fromRGB(75.00000312924385, 74.0000031888485, 74.0000031888485))
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Asphalt, Color3.fromRGB(80.00000283122063,84.00000259280205,84.00000259280205))
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Sand, Color3.fromRGB(207.00000286102295, 203.00000309944153, 167.00000524520874))
+        end
+	end    
+})
+
+local ArmColor3 = Color3.fromRGB(255,0,0)
+
+Tab:AddToggle({
+	Name = "Custom Arm Color",
+	Default = false,
+	Callback = function(Value)
+		CustomArmColor = Value
+
+        if CustomArmColor then
+            for i,v in pairs(FPSArms:GetChildren()) do
+                if v:IsA("BasePart") then
+                    v.Material = Enum.Material.ForceField
+                    v.Color = ArmColor3
+                end
+            end
+        else
+            for i,v in pairs(FPSArms:GetChildren()) do
+                if v:IsA("BasePart") then
+                    v.Material = Enum.Material.Plastic
+                    v.Color = Color3.fromRGB(144,126,112)
+                end
+            end
+        end
+	end    
+})
+
+Tab2:AddColorpicker({
+	Name = "Terrain Color",
+	Default = Color3.fromRGB(255, 0, 0),
+	Callback = function(Value)
+		if CustomTerrainColor then
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Grass, Value)
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Basalt, Value)
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Asphalt, Value)
+            game.Workspace.Terrain:SetMaterialColor(Enum.Material.Sand, Value)
+        end
+	end	  
+})
+
+local ArmColor3 = Color3.fromRGB(255,0,0)
+
+
+Tab:AddToggle({
+	Name = "Custom Gun Color",
+	Default = false,
+	Callback = function(Value)
+		CustomGunColor = Value
+        if CustomGunColor then
+            game:GetService("ReplicatedStorage").HandModels.Hammer.Handle.Material = Enum.Material.Neon
+            game:GetService("ReplicatedStorage").HandModels.Hammer.handkle.Material = Enum.Material.Neon
+            game:GetService("ReplicatedStorage").HandModels.Hammer.thingy.Material = Enum.Material.Neon
+            -----Hammer
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Barrel.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Body.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Bolt.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Stock.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Grip.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Mag.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Muzzle.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.IronSights.ADS.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.IronSights.Union.Material = Enum.Material.ForceField 
+            -----PipeSMG 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.IronSights.ADS.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.IronSights.Union.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.Mag.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.Flap.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.Muzzle.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.Body.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.Bolt.Material = Enum.Material.ForceField 
+            -----USP 
+            game:GetService("ReplicatedStorage").HandModels.USP.IronSights.ADS.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.USP.IronSights.Union.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.USP.Muzzle.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.USP.Mag.Material = Enum.Material.ForceField 
+            game:GetService("ReplicatedStorage").HandModels.USP["Meshes/USP_Slide"].Material = Enum.Material.ForceField
+            game:GetService("ReplicatedStorage").HandModels.USP["Meshes/USP_Body"].Material = Enum.Material.ForceField 
+        else
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Barrel.Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Body.Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Bolt.Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Stock.Material = Enum.Material.Wood 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Grip.Material = Enum.Material.Wood 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Mag.Material = Enum.Material.Plastic 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.Muzzle.Material = Enum.Material.Wood 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.IronSights.ADS.Material = Enum.Material.Plastic 
+            game:GetService("ReplicatedStorage").HandModels.HMAR.IronSights.Union.Material = Enum.Material.Metal 
+            -----PipeSMG 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.IronSights.ADS.Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.IronSights.Union.Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.Mag.Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.Flap.Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.Muzzle.Material = Enum.Material.Plastic 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.Body.Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.PipeSMG.Bolt.Material = Enum.Material.Metal 
+            -----USP 
+            game:GetService("ReplicatedStorage").HandModels.USP.IronSights.ADS.Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.USP.IronSights.Union.Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.USP.Muzzle.Material = Enum.Material.Plastic 
+            game:GetService("ReplicatedStorage").HandModels.USP.Mag.Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.USP["Meshes/USP_Slide"].Material = Enum.Material.Metal 
+            game:GetService("ReplicatedStorage").HandModels.USP["Meshes/USP_Body"].Material = Enum.Material.Metal
+            -----Hammer
+            game:GetService("ReplicatedStorage").HandModels.Hammer.Handle.Material = Enum.Material.Wood
+            game:GetService("ReplicatedStorage").HandModels.Hammer.handkle.Material  = Enum.Material.Wood
+            game:GetService("ReplicatedStorage").HandModels.Hammer.thingy.Material  = Enum.Material.Wood
+        end
+    end
+})
+
+Tab2:AddColorpicker({
+	Name = "ArmColor",
+	Default = Color3.fromRGB(255, 0, 0),
+	Callback = function(Value)
+        ArmColor3 = Value
+        if CustomArmColor then
+            for i,v in pairs(FPSArms:GetChildren()) do
+                if v:IsA("BasePart") then
+                    v.Transparency = 0.5
+                    v.Material = Enum.Material.ForceField
+                    v.Color = ArmColor3
+                end
+            end
+        end
+	end	  
+})
+
+
+Tab2:AddColorpicker({
+	Name = "Gun Color",
+	Default = Color3.fromRGB(255, 0, 0),
+	Callback = function(Value)
+		if CustomGunColor then
+           end
+        end
+})
+
+RiskyTab:AddToggle({
+	Name = "Always Crouched / Fake Crouch (Good for Peaks)",
+	Default = false,
+	Callback = function(Value)
+		CrouchAlways = Value
+	end    
+})
+
+RiskyTab:AddToggle({
+	Name = "Always Sliding / Fake Slide",
+	Default = false,
+	Callback = function(Value)
+		SlideAlways = Value
+	end    
+})
+
+local Camera = workspace.CurrentCamera
+
+coroutine.wrap(function()
+    while wait(0.5) do
+        if CrouchAlways == true then
+            
+            local args = {
+                [1] = 3,
+                [2] = true
+            }
+            
+            game:GetService("ReplicatedStorage").e:FireServer(unpack(args))
+        end
+
+        if SlideAlways then
+            
+            local args = {
+                [1] = 4,
+                [2] = true,
+                [3] = Camera.CFrame.lookVector
+            }
+            
+            game:GetService("ReplicatedStorage").e:FireServer(unpack(args))
+        end
+    end
+end)()
+
+Tab3:AddToggle({
+	Name = "Float/Fly",
+	Default = false,
+	Callback = function(Value)
+		FlyOn = Value
+	end    
+})
+
+local TargetHit = "Off"
+
+RiskyTab:AddDropdown({
+	Name = "Force Hit",
+	Default = "Default",
+	Options = {"Off", "Head", "UpperTorso"},
+	Callback = function(Value)
+        TargetHit = Value
+	end    
+})
+
+local ItemList = {
+    [1] = 50,
+    [2] = 50
+}
+
+function GetChance()
+	local ItemSelection = {}
+	
+	for Item, Chance in pairs(ItemList) do
+		for i = 1, Chance do
+			table.insert(ItemSelection,Item)
+		end
+	end
+	
+	local Thing = ItemSelection[math.random(#ItemSelection)]
+    print(Thing)
+    if Thing == 1 then
+        return true
+    else
+        return false
+    end
+end
+
+RiskyTab:AddToggle({
+	Name = "Chance Of Headshots (Force Hit needs to be on Head)",
+	Default = false,
+	Callback = function(Value)
+        NotAllHeadShots = Value
+	end    
+})
+
+
+RiskyTab:AddSlider({
+	Name = "Headshot Chance (Chance Of Headshots must be on.)",
+	Min = 0,
+	Max = 100,
+	Default = 50,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 5,
+	ValueName = "%Chance",
+	Callback = function(Value)
+		ItemList[1] = Value
+        ItemList[2] = 100 - Value
+        print(ItemList[1], ItemList[2])
+	end
+})
+
+Tab3:AddToggle({
+	Name = "Bigger Hitbox",
+	Default = false,
+	Callback = function(Value)
+		HitboxEnabled = Value
+        print(Value, "is the new value of hitbox!")
+	end    
+})
+
+Tab2:AddSlider({
+	Name = "(Y Key) Teleport Distance",
+	Min = 0,
+	Max = 5,
+	Default = 1.5,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 0.5,
+	ValueName = "Studs",
+	Callback = function(Value)
+		TeleportDistance = Value
+	end
+})
+Tab2:AddSlider({
+	Name = "(H) Zoom",
+	Min = 0,
+	Max = 20,
+	Default = 10,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 1,
+	ValueName = "Value",
+	Callback = function(Value)
+		SelectedZoom = Value
+	end
+})
+
+Tab2:AddSlider({
+	Name = "(L Key) FieldOfView",
+	Min = 0,
+	Max = 120,
+	Default = 100,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 1,
+	ValueName = "Value",
+	Callback = function(Value)
+		SelectedFOV = Value
+	end
+})
+
+Tab2:AddSlider({
+	Name = "Spinbot Speed",
+	Min = 0.5,
+	Max = 5,
+	Default = 0.5,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 0.5,
+	ValueName = "Speed",
+	Callback = function(Value)
+		SpinSpeed = Value
+	end
+})
+
+Tab2:AddSlider({
+	Name = "Hitbox Refresh Time",
+	Min = 1,
+	Max = 30,
+	Default = 5,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 0.5,
+	ValueName = "Seconds",
+	Callback = function(Value)
+		HitboxRefreshTime = Value
+	end
+})
+
+
+Tab2:AddSlider({
+	Name = "SlideSpeed",
+	Min = 0,
+	Max = 30,
+	Default = 20,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 1,
+	ValueName = "Speed",
+	Callback = function(Value)
+		SlideSpeed = Value
+	end
+})
+
+Tab3:AddToggle({
+	Name = "Aimlock",
+	Default = false,
+	Callback = function(Value)
+		AimbotEnabled = Value
+	end    
+})
+
+Tab3:AddToggle({
+	Name = "Faster Slide Booster",
+	Default = false,
+	Callback = function(Value)
+		SlideBoost = Value
+	end    
+})
+
+Tab3:AddToggle({
+	Name = "FireRate Booster",
+	Default = false,
+	Callback = function(Value)
+		if Value == true then
+            for i,v in pairs(game.ReplicatedStorage.ItemConfigs:GetChildren()) do
+                pcall(function()
+                    local Module = require(v)
+
+                    v.attackCooldown = v.attackCooldown / 1.5
+                end)
+            end
+        else
+            for i,v in pairs(game.ReplicatedStorage.ItemConfigs:GetChildren()) do
+                pcall(function()
+                    local Module = require(v)
+
+                    v.attackCooldown = v.attackCooldown * 1.5
+                end)
+            end
+        end
+	end    
+})
+
+Tab2:AddSlider({
+	Name = "Aimlock Smoothness",
+	Min = 0.1,
+	Max = 50,
+	Default = 5,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 0.1,
+	ValueName = "Smoothness",
+	Callback = function(Value)
+		AimbotSensitivity = Value
+	end
+})
+
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local UIS = game:GetService("UserInputService")
+local LocalCharacter = workspace.Ignore.LocalCharacter
+local Middle = LocalCharacter.Middle
+local localPlayer = game.Players.LocalPlayer
+local mouse = localPlayer:GetMouse()
+local TargetRN = nil
+local Players = {
+
+}
+
+local HeadEspTable = {
+
+}
+
+local function HeadEsp()
+    for i,v in pairs(workspace:GetChildren()) do
+        local Head = v:FindFirstChild("Head")
+
+        if Head and Head:FindFirstChild("Nametag") and not Head:FindFirstChild("BBG") then
+            table.insert(HeadEspTable,Head)
+            local plrname = Head.Nametag.tag.Text
+			local bax = Head
+
+			local BillboardGui = Instance.new("BillboardGui", bax)
+			local TextLabel = Instance.new("TextLabel", BillboardGui)
+
+			BillboardGui.Name = "BBG"
+			BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+			BillboardGui.AlwaysOnTop = true
+			BillboardGui.Size = UDim2.new(0, 80, 0, 20) 
+
+			TextLabel.Name = "PlayerHeadText"
+            TextLabel.TextScaled = true
+            TextLabel.Text = plrname
+            if game.Players:FindFirstChild(plrname) then
+                TextLabel.TextColor3 = Color3.new(0,255,0)
+            else
+                TextLabel.TextColor3 = Color3.new(255,0,0)
+            end
+			TextLabel.Parent = BillboardGui
+			TextLabel.BackgroundColor3 = Color3.fromRGB(47, 39, 39)
+			TextLabel.BackgroundTransparency = 0.85
+			TextLabel.Size = BillboardGui.Size
+			TextLabel.Font = Enum.Font.Code
+			local hum = bax.Parent:FindFirstChild("Humanoid")
+            if not Head:FindFirstChild("Amongus") then
+                local Amongus = Instance.new("Highlight",Head)
+                Amongus.FillColor = Color3.new(255,255,255)
+                Amongus.Name = "Amongus"
+            end
+        end
+    end
+end
+
+local function RemoveAllHeadEsp()
+    for i,v in pairs(HeadEspTable) do
+        if v and v:FindFirstChild("BBG") then
+            v.BBG:Destroy()
+        end
+    end
+
+    for i=1, #HeadEspTable do
+        table.remove(HeadEspTable,i)
+    end
+end
+
+function spin()
+	local Spin = Instance.new("BodyAngularVelocity")
+	Spin.Name = "Spinning"
+	Spin.Parent = workspace.Ignore.LocalCharacter.Middle
+	Spin.MaxTorque = Vector3.new(0, math.huge, 0)
+	Spin.AngularVelocity = Vector3.new(0,SpinSpeed,0)
+end
+
+RiskyTab:AddToggle({
+	Name = "Spinbot",
+	Default = false,
+	Callback = function(Value)
+        SpinIsOn = Value
+	end    
+})
+
+value = 1
+
+Tab:AddToggle({
+	Name = "Head and Name ESP",
+	Default = false,
+	Callback = function(Value)
+		PlayerEspOn = Value
+        if PlayerEspOn == false then
+            RemoveAllHeadEsp()
+        end
+	end    
+})
+
+local function GetPlayers()
+    for i = 1, #Players do
+        table.remove(Players,i)
+    end
+    for i,v in pairs(workspace:GetChildren()) do
+        if v:FindFirstChild("Head") and v.Head:FindFirstChild("Nametag") then
+            if not table.find(Players,v) then
+                table.insert(Players,v)
+            end
+        end
+    end
+end
+
+local DefaultUIS = UIS.MouseDeltaSensitivity
+
+local function PlayerInfo(player)
+    if player:FindFirstChild("Head") == nil then return nil end
+    return {
+        Username = player.Head.Nametag.tag.Text
+    }
+end
+
+local function viewportPoint(ret, ...)
+    if type(ret) == "boolean" then
+        local pos, vis = workspace.CurrentCamera:WorldToViewportPoint(...)
+        return pos
+    else
+        return workspace.CurrentCamera:WorldToViewportPoint(ret, ...)
+    end
+end
+
+local function GetPlayer()
+    local last_distance = math.huge
+    local target = nil
+
+    for i, v in pairs(Players) do
+
+        local info = PlayerInfo(v)
+
+        if info and localPlayer.Name ~= info.Username and game.Players:FindFirstChild(info.Username) ~= nil then
+            local sp, visible = viewportPoint(v:WaitForChild("HumanoidRootPart", math.huge).Position)
+            local mouse_loc = UIS:GetMouseLocation()
+            local distance = (Vector2.new(mouse_loc.X, mouse_loc.Y) - Vector2.new(sp.X, sp.Y)).Magnitude
+
+            if last_distance > distance then
+                target = v
+                last_distance = distance
+            end
+        end
+
+    end
+
+    return target
+end
+
+local Sensitivity = 1
+
+local LoopBad = nil
+MovementPrediction = true
+
+Tab3:AddToggle({
+	Name = "Aimlock Prediction",
+	Default = false,
+	Callback = function(Value)
+		MovementPrediction = Value
+	end    
+})
+
+local Mouse = game.Players.LocalPlayer:GetMouse()
+
+local function AimToPosition(Position)
+	local AimX = ((Position.X - Mouse.X) + 0) / AimbotSensitivity
+    local AimY = ((Position.Y - Mouse.Y - 36) + 0) / AimbotSensitivity
+    return AimX, AimY
+end
+
+local OldPosition = nil
+
+local function CalculateVelocity(Before, After, deltaTime)
+	-- // Vars
+	local Displacement = (After - Before)
+	local Velocity = Displacement / deltaTime
+
+	-- // Return
+	return Velocity
+end
+
+local PredictionSmoothness = 1
+
+Tab2:AddSlider({
+	Name = "Prediction Strength",
+	Min = 0,
+	Max = 20,
+	Default = 1,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 0.5,
+	ValueName = "Strength",
+	Callback = function(Value)
+        PredictionSmoothness = Value
+	end
+})
+
+local BoostAim = UIS.MouseDeltaSensitivity
+
+Tab2:AddSlider({
+	Name = "Aimlock Strength (Optional DONT USE IF NOT NEEDED)",
+	Min = 0.1,
+	Max = 200,
+	Default = UIS.MouseDeltaSensitivity,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 0.1,
+	ValueName = "Strength",
+	Callback = function(Value)
+        BoostAim = Value
+	end
+})
+
+
+UIS.InputBegan:Connect(function(input, gameProcessedEvent)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        print("aiming")
+        Aiming = true
+        LoopBad = RunService.RenderStepped:Connect(function(dt)
+            if Aiming and AimbotEnabled == true then
+                local p = nil
+                if not TargetRN then
+                     p = GetPlayer()
+                     if p then
+                        TargetRN = p
+                     end
+                else
+                    p = TargetRN
+                end
+                if not p then print("no player found") return end
+        
+                if p ~= nil then
+                    UIS.MouseDeltaSensitivity = BoostAim
+                    local CurrentPosition = p.HumanoidRootPart.Position
+                    if OldPosition == nil then
+                        OldPosition = CurrentPosition
+                    end
+                    local Velocity = CalculateVelocity(OldPosition,CurrentPosition,dt)
+                    local Prediction = Vector3.new(0, 0, 0)
+                    if MovementPrediction == true then
+                        Prediction = Velocity * (PredictionSmoothness / 10) * (Middle.Position - p.Head.Position).magnitude / 100
+                    end
+
+                    OldPosition = CurrentPosition
+
+                    local AimAt = Camera:WorldToViewportPoint(p.Head.Position + Prediction)
+
+                    mousemoverel(AimToPosition(Vector2.new(AimAt.X, AimAt.Y)))
+                end
+            end
+        end)
+    end
+end)
+
+local OldDelta = UIS.MouseDeltaSensitivity
+
+UIS.InputEnded:Connect(function(input, gameProcessedEvent)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        Aiming = false
+        UIS.MouseDeltaSensitivity = OldDelta
+        OldPosition = nil
+        local success, errormessage = pcall(function()
+            LoopBad:Disconnect()
+        end)
+        if not success then
+            warn(errormessage)
+        end
+        UIS.MouseDeltaSensitivity = DefaultUIS
+        TargetRN = nil
+    end
+end)
+
+
+local UIS = game:GetService("UserInputService")
+local char = workspace.Ignore.LocalCharacter
+local flykey = Enum.KeyCode.F
+
+local part = Instance.new("Part")
+part.Transparency = 0.9
+part.Size = Vector3.new(4,1,4)
+part.Parent = workspace
+part.Anchored = true
+
+on = false
+
+local LoopThing = nil
+
+KeyTab:AddBind({
+	Name = "Float/Fly",
+	Default = Enum.KeyCode.Y,
+	Hold = false,
+	Callback = function()
+        if FlyOn then
+            if on == false then
+                on = true
+                LoopThing = RunService.RenderStepped:Connect(function()
+                    if on then
+                        local pos = char.Middle.Position - Vector3.new(0,3.5,0)
+                        part.CanCollide = true
+                        part.Position = pos
+                    end
+                end)
+                local pos = char.Middle.Position - Vector3.new(0,3.5,0)
+                part.CanCollide = true
+                part.Position = pos
+            else
+                local success,errormessage = pcall(function()
+                    LoopThing:Disconnect()
+                end)
+                if not success then
+                    warn(errormessage)
+                end
+                on = false
+                part.CanCollide = false
+                part.Position = Vector3.new(1000,1000,1000)
+            end 
+        end
+	end    
+})
+
+local IsSliding = false
+
+local LoopSus
+
+UIS.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end
+    if input.KeyCode == Enum.KeyCode.C and SlideBoost == true then
+        LoopSus = RunService.RenderStepped:Connect(function(deltaTime)
+            if IsSliding then
+                for i,v in pairs(LocalCharacter:GetChildren()) do
+                    v.CFrame = v.CFrame + Camera.CFrame.LookVector * SlideSpeed * deltaTime
+                end
+            end
+        end)
+        IsSliding = true        
+    end
+end)
+
+UIS.InputEnded:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end
+    if input.KeyCode == Enum.KeyCode.C then
+        local success, errormessage = pcall(function()
+            LoopSus:Disconnect()
+        end)
+        if not success then
+            warn(errormessage)
+        end
+        IsSliding = false     
+    end
+end)
+
+local DelayedOnT = false
+
+KeyTab:AddBind({
+	Name = "Pickup All",
+	Default = Enum.KeyCode.F,
+	Hold = false,
+	Callback = function()
+        if DelayedOnT == false then
+            DelayedOnT = true
+            coroutine.wrap(function()
+                wait(1)
+                DelayedOnT = false
+            end)()
+            lol = 0
+            repeat task.wait()
+            local A_1 = 106
+            local A_2 = lol
+            local A_3 = true
+            local Event = game:GetService("ReplicatedStorage").e
+            Event:FireServer(A_1, A_2, A_3)
+            lol = lol + 1
+            until
+            lol == 30
+        end
+	end    
+})
+
+KeyTab:AddBind({
+	Name = "TP",
+	Default = Enum.KeyCode.X,
+	Hold = false,
+	Callback = function()
+        for i,v in pairs(LocalCharacter:GetChildren()) do
+            v.CFrame = v.CFrame + Camera.CFrame.LookVector * 1.5
+        end
+	end    
+})
+
+local tpon = false
+
+KeyTab:AddBind({
+	Name = "Loop TP",
+	Default = Enum.KeyCode.Y,
+	Hold = true,
+	Callback = function()
+        if tpon == false then
+            tpon = true
+            repeat wait(0.1)
+                for i,v in pairs(LocalCharacter:GetChildren()) do
+                    v.CFrame = v.CFrame + Camera.CFrame.LookVector * TeleportDistance
+                end
+            until tpon == false
+        else
+            tpon = false
+        end
+	end    
+})
+
+local TableOfInvisibles = {
+
+}
+
+local function WallInvis()
+   for i,v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and tostring(v) == "Hitbox" then
+            table.insert(TableOfInvisibles,v)
+            v.Transparency = 0.75
+        end
+    end 
+    WindowHighlight()
+end
+
+local function WallVis()
+   for i,v in pairs(TableOfInvisibles) do
+        if v then
+            v.Transparency = 0
+        end
+    end 
+
+    for i=1 , #TableOfInvisibles do
+        table.remove(TableOfInvisibles,i)
+    end
+    RemoveWindowHighlight()
+end
+
+invison = false
+
+KeyTab:AddBind({
+	Name = "Xray",
+	Default = Enum.KeyCode.T,
+	Hold = false,
+	Callback = function()
+        invison = not invison
+        if invison then
+            WallInvis()
+        else
+            WallVis()
+        end
+	end    
+})
+
+local OldSound = game.SoundService.PlayerHitHeadshot.SoundId
+
+Extra:AddDropdown({
+	Name = "Hit Sound",
+	Default = "Default",
+	Options = {"Default", "Rust", "Steve","Bruh"},
+	Callback = function(Value)
+		if Value == "Default" then
+            local HeadShotSound = game.SoundService.PlayerHitHeadshot
+            local HitSound = game.SoundService.PlayerHit2
+            HeadShotSound.SoundId = OldSound
+            HitSound.SoundId = OldSound
+            HeadShotSound.Volume = 5
+            HitSound.Volume = 5
+            HeadShotSound.PlaybackSpeed = 1.6
+            HitSound.PlaybackSpeed = 1.6
+            HitSound:Play()
+        elseif Value == "Rust" then
+            local HeadShotSound = game.SoundService.PlayerHitHeadshot
+            local HitSound = game.SoundService.PlayerHit2
+
+            HeadShotSound.SoundId = ("rbxassetid://4764109000")
+            HitSound.SoundId = ("rbxassetid://4764109000")
+            HeadShotSound.Volume = 5
+            HitSound.Volume = 5
+            HeadShotSound.PlaybackSpeed = 1
+            HitSound.PlaybackSpeed = 1
+            HitSound:Play()
+        elseif Value == "Steve" then
+            local HeadShotSound = game.SoundService.PlayerHitHeadshot
+            local HitSound = game.SoundService.PlayerHit2
+
+            HeadShotSound.SoundId = ("rbxassetid://5869422451")
+            HitSound.SoundId = ("rbxassetid://5869422451")
+            HeadShotSound.Volume = 5
+            HitSound.Volume = 5
+            HeadShotSound.PlaybackSpeed = 1
+            HitSound.PlaybackSpeed = 1
+            HitSound:Play()
+            elseif Value == "Bruh" then
+            local HeadShotSound = game.SoundService.PlayerHitHeadshot
+            local HitSound = game.SoundService.PlayerHit2
+
+            HeadShotSound.SoundId = ("rbxassetid://5783842554")
+            HitSound.SoundId = ("rbxassetid://5783842554")
+            HeadShotSound.Volume = 5
+            HitSound.Volume = 5
+            HeadShotSound.PlaybackSpeed = 1
+            HitSound.PlaybackSpeed = 1
+            HitSound:Play()
+        end
+	end    
+})
+
+
+local LocalCharacter = workspace.Ignore.LocalCharacter
+local Ignore = workspace.Ignore
+
+Ignore.ChildAdded:Connect(function(child)
+    local handle = child:FindFirstChild("Handle")
+    if handle then
+        handle.Transparency = 1
+    end
+end)
+local Loop
+
+FOVON = true
+
+KeyTab:AddBind({
+	Name = "Zoom",
+	Default = Enum.KeyCode.H,
+	Hold = true,
+	Callback = function()
+        FOVON = not FOVON
+        if FOVON then
+            Loop = RunService.RenderStepped:Connect(function()
+                workspace.CurrentCamera.FieldOfView = SelectedZoom
+            end)
+        else
+            if Loop then
+                Loop:Disconnect() 
+            end
+        end
+	end    
+})
+
+local Loop
+
+FOVON = false
+
+KeyTab:AddBind({
+	Name = "FOV",
+	Default = Enum.KeyCode.L,
+	Hold = false,
+	Callback = function()
+        FOVON = not FOVON
+        if FOVON then
+            Loop = RunService.RenderStepped:Connect(function()
+                workspace.CurrentCamera.FieldOfView = SelectedFOV
+            end)
+        else
+            if Loop then
+                Loop:Disconnect() 
+            end
+        end
+	end    
+})
+
+local TableOfBackpacks = {
+
+}
+
+local function BackpackEsp()
+    if BackpackEspEnabled == false then return end
+    for i,v in pairs(workspace:GetDescendants()) do
+        if tostring(v.Parent) == "Model" and v:IsA("BasePart") and v.Parent:IsA("Model") and v.Parent ~= workspace and tostring(v) == "Part" and not v:FindFirstChild("BackBill") then
+            if v.Color == Color3.fromRGB(177, 229, 166) then
+                table.insert(TableOfBackpacks,v)
+                local BillboardGui = Instance.new("BillboardGui", v)
+                local TextLabel = Instance.new("TextLabel", BillboardGui)
+    
+                BillboardGui.Name = "BackBill"
+                BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+                BillboardGui.AlwaysOnTop = true
+                BillboardGui.Size = UDim2.new(0, 40, 0, 10) 
+    
+                TextLabel.Name = "BackpackText"
+                TextLabel.TextScaled = true
+                TextLabel.Text = "Drop"
+                TextLabel.TextColor3 = Color3.fromRGB(177, 229, 166)
+                TextLabel.Parent = BillboardGui
+                TextLabel.BackgroundColor3 = Color3.fromRGB(47, 39, 39)
+                TextLabel.BackgroundTransparency = 0.85
+                TextLabel.Size = BillboardGui.Size
+                TextLabel.Font = Enum.Font.Code
+            end
+        end
+    end
+end
+
+local function NoBackpackEsp()
+    for i,v in pairs(TableOfBackpacks) do
+        local Backpack = v:FindFirstChild("BackBill")
+        if Backpack then
+            Backpack:Destroy()
+        end
+    end
+
+    for i=1 , #TableOfBackpacks do
+        table.remove(TableOfBackpacks,i)
+    end
+end
+
+local OreEspTable = {
+
+}
+
+local function OreEsp()
+    for i,v in pairs(workspace:GetDescendants()) do
+        if tostring(v.Parent) == "Model" and v:IsA("BasePart") and v.Parent:IsA("Model") and v.Parent ~= workspace and tostring(v) == "Part" and not v:FindFirstChild("OreBill") then
+            if OreOn and v.Color == Color3.fromRGB(199, 172, 120) then
+                table.insert(OreEspTable,v)
+                local BillboardGui = Instance.new("BillboardGui", v)
+                local TextLabel = Instance.new("TextLabel", BillboardGui)
+    
+                BillboardGui.Name = "OreBill"
+                BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+                BillboardGui.AlwaysOnTop = true
+                BillboardGui.Size = UDim2.new(0, 40, 0, 10) 
+    
+                TextLabel.Name = "OreHeadText"
+                TextLabel.TextScaled = true
+                TextLabel.Text = "Iron Ore"
+                TextLabel.TextColor3 = Color3.fromRGB(199,172,120)
+                TextLabel.Parent = BillboardGui
+                TextLabel.BackgroundColor3 = Color3.fromRGB(47, 39, 39)
+                TextLabel.BackgroundTransparency = 0.85
+                TextLabel.Size = BillboardGui.Size
+                TextLabel.Font = Enum.Font.Code
+            elseif OreOn and v.Color == Color3.fromRGB(205, 205, 205) and #v.Parent:GetChildren() == 1 then
+                table.insert(OreEspTable,v)
+                local BillboardGui = Instance.new("BillboardGui", v)
+                local TextLabel = Instance.new("TextLabel", BillboardGui)
+    
+                BillboardGui.Name = "OreBill"
+                BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+                BillboardGui.AlwaysOnTop = true
+                BillboardGui.Size = UDim2.new(0, 40, 0, 10) 
+    
+                TextLabel.Name = "OreHeadText"
+                TextLabel.TextScaled = true
+                TextLabel.Text = "Stone Ore"
+                TextLabel.TextColor3 = Color3.fromRGB(205,205,205)
+                TextLabel.Parent = BillboardGui
+                TextLabel.BackgroundColor3 = Color3.fromRGB(47, 39, 39)
+                TextLabel.BackgroundTransparency = 0.85
+                TextLabel.Size = BillboardGui.Size
+                TextLabel.Font = Enum.Font.Code
+            elseif OreOn and v.Color == Color3.fromRGB(248, 248, 248) then
+                table.insert(OreEspTable,v)
+                local BillboardGui = Instance.new("BillboardGui", v)
+                local TextLabel = Instance.new("TextLabel", BillboardGui)
+    
+                BillboardGui.Name = "OreBill"
+                BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+                BillboardGui.AlwaysOnTop = true
+                BillboardGui.Size = UDim2.new(0, 40, 0, 10) 
+    
+                TextLabel.Name = "OreHeadText"
+                TextLabel.TextScaled = true
+                TextLabel.Text = "Nitrate Ore"
+                TextLabel.TextColor3 = Color3.fromRGB(248, 248, 248)
+                TextLabel.Parent = BillboardGui
+                TextLabel.BackgroundColor3 = Color3.fromRGB(47, 39, 39)
+                TextLabel.BackgroundTransparency = 0.85
+                TextLabel.Size = BillboardGui.Size
+                TextLabel.Font = Enum.Font.Code
+            elseif BackpackEspEnabled and v.Color == Color3.fromRGB(177, 229, 166) and not v:FindFirstChild("BackBill") then
+                local BillboardGui = Instance.new("BillboardGui", v)
+                local TextLabel = Instance.new("TextLabel", BillboardGui)
+    
+                BillboardGui.Name = "BackBill"
+                BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+                BillboardGui.AlwaysOnTop = true
+                BillboardGui.Size = UDim2.new(0, 40, 0, 10) 
+    
+                TextLabel.Name = "BackpackText"
+                TextLabel.TextScaled = true
+                TextLabel.Text = "Drop"
+                TextLabel.TextColor3 = Color3.fromRGB(177, 229, 166)
+                TextLabel.Parent = BillboardGui
+                TextLabel.BackgroundColor3 = Color3.fromRGB(47, 39, 39)
+                TextLabel.BackgroundTransparency = 0.85
+                TextLabel.Size = BillboardGui.Size
+                TextLabel.Font = Enum.Font.Code
+            end
+        end
+    end
+end
+
+local function NoOreEsp()
+    for i,v in pairs(OreEspTable) do
+        if v and v:FindFirstChild("OreBill") then
+            v.OreBill:Destroy()
+        end
+    end
+
+    for i=1 , #OreEspTable do
+        table.remove(OreEspTable,i)
+    end
+end
+
+
+Tab:AddToggle({
+	Name = "Ore ESP",
+	Default = false,
+	Callback = function(Value)
+		OreOn = Value
+
+        if OreOn then
+            OreEsp()
+        elseif not OreOn then
+            NoOreEsp()
+        end
+	end    
+})
+
+local TableOfWallESP = {
+
+}
+
+local function WallESP()
+    for i,v in pairs(workspace:GetDescendants()) do
+         if v:IsA("BasePart") and tostring(v) == "Hitbox" and not v:FindFirstChild("WallHighlight") then
+            table.insert(TableOfWallESP,v)
+
+            local chams_box = Instance.new("BoxHandleAdornment", v)
+            chams_box.Name = "WallChams"
+            chams_box.AlwaysOnTop = true
+            chams_box.ZIndex = 3
+            chams_box.Adornee = v
+            chams_box.Color3 = Color3.fromRGB(255, 0, 0)
+            chams_box.Transparency = 0.5
+            chams_box.Size = v.Size
+         end
+     end 
+ end
+
+ local function NoWallESP()
+    for i,v in pairs(TableOfWallESP) do
+        local Highlight = v:FindFirstChild("WallChams")
+        if Highlight then
+            Highlight:Destroy()
+        end
+    end
+
+    for i=1 ,#TableOfWallESP do
+        table.remove(TableOfWallESP, i)
+    end
+ end
+
+ KeyTab:AddBind({
+	Name = "Wall ESP",
+	Default = Enum.KeyCode.P,
+	Hold = false,
+	Callback = function()
+		WallEspOn = not WallEspOn
+
+        if WallEspOn then
+            WallESP()
+        elseif not WallEspOn then
+            NoWallESP()
+        end
+	end    
+})
+
+
+Tab:AddToggle({
+	Name = "Dropped ESP",
+	Default = false,
+	Callback = function(Value)
+		BackpackEspEnabled = Value
+
+        if BackpackEspEnabled then
+            BackpackEsp()
+        elseif not BackpackEspEnabled then
+            NoBackpackEsp()
+        end
+	end    
+})
+
+local OreEspCour = coroutine.wrap(function()
+    while true do
+        wait(10)
+        if OreOn or BackpackEspEnabled then
+            print("Refreshed Ore and Backpack ESP")
+            OreEsp()
+        end
+    end
+end)()
+
+local PipePistolDerect = require(game.ReplicatedStorage.ItemConfigs.PipePistol)
+local PipeSMGDerect = require(game.ReplicatedStorage.ItemConfigs.PipeSMG)
+local USPDerect = require(game.ReplicatedStorage.ItemConfigs.USP)
+local HMARDerect = require(game.ReplicatedStorage.ItemConfigs.HMAR)
+local CrossbowDerect = require(game.ReplicatedStorage.ItemConfigs.Crossbow)
+local BowDerect = require(game.ReplicatedStorage.ItemConfigs.Bow)
+local BlunderbussDerect = require(game.ReplicatedStorage.ItemConfigs.Blunderbuss)
+local BowDerect = require(game.ReplicatedStorage.ItemConfigs.Bow)
+local DerectCrossbow = require(game.ReplicatedStorage.ItemConfigs.Crossbow)
+local BlunderbussDerect = require(game.ReplicatedStorage.ItemConfigs.Blunderbuss)
+
+local success, errormessage = pcall(function() -- No Scatter
+    PipePistolDerect.accuracy = 10000
+    PipeSMGDerect.accuracy = 10000
+    USPDerect.accuracy = 100000
+    HMARDerect.accuracy = 70000
+    BowDerect.accuracy = 100000
+    DerectCrossbow.accuracy = 100000
+end)
+
+if not success then
+    print(errormessage)
+end
+
+local success, errormessage = pcall(function() -- BlunderBuss and bow mod
+
+    BlunderbussDerect.accuracy = 999999999
+    BlunderbussDerect.recoilPattern = { { 0, 0 } }
+    
+    
+    local BandageModule = require(game.ReplicatedStorage.ItemConfigs.Bow)
+    
+    BandageModule.accuracy = 999999999
+    BandageModule.recoilPattern = { { 0, 0 } }
+    BandageModule.attackCooldown = 0.85
+end)
+
+local success , errormessage = pcall(function() -- No Recoil
+    PipePistolDerect.recoilPattern = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } }
+    PipeSMGDerect.recoilPattern = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } }
+    USPDerect.recoilPattern ={ { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } }
+    HMARDerect.recoilPattern = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } }
+    USPDerect.anims.fire = ""
+    BowDerect.recoilPattern = { { 0, 0 } } 
+    DerectCrossbow.recoilPattern = { { 0, 0 } }
+end)
+
+if not success then
+    print(errormessage)
+end
+
+coroutine.wrap(function()
+    while true do
+        wait(25)
+        print("Refreshed ESP")
+        RemoveAllHeadEsp()
+        HeadEsp()
+    end
+end)()
+
+local HedsOn = Instance.new("Part")
+HedsOn.Name = "HedsOn"
+HedsOn.Anchored = false
+HedsOn.CanCollide = false
+HedsOn.Transparency = 1
+HedsOn.Size = Vector3.new(4, 7, 3)
+HedsOn.Parent = game.ReplicatedStorage
+
+local HTTransparency = 0.8
+local XSize = 4
+local YSize = 6
+local ZSize = 4
+
+local BigHeadsPart = Instance.new("Part")
+BigHeadsPart.Name = "Torso"
+BigHeadsPart.Anchored = false
+BigHeadsPart.CanCollide = false
+BigHeadsPart.Transparency = HTTransparency
+BigHeadsPart.Size = Vector3.new(XSize, YSize, ZSize)
+
+local TablesOfHitboxes = {
+
+}
+
+function RefreshBoxes()
+    for i,v in pairs(TablesOfHitboxes) do
+        if v and v:IsA("BasePart") then
+            pcall(function()
+                v.Size = Vector3.new(XSize, YSize, ZSize)
+            end)
+        end
+    end
+
+    for i=1 , #TablesOfHitboxes do
+        table.remove(TablesOfHitboxes,i)
+    end
+end
+
+Tab2:AddSlider({
+	Name = "Hitbox Size X",
+	Min = 0,
+	Max = 4,
+	Default = 4,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 0.5,
+	ValueName = "Studs",
+	Callback = function(Value)
+		XSize = Value
+        RefreshBoxes()
+	end
+})
+
+Tab2:AddSlider({
+	Name = "Hitbox Size Y",
+	Min = 0,
+	Max = 6,
+	Default = 6,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 0.5,
+	ValueName = "Studs",
+	Callback = function(Value)
+		YSize = Value
+        RefreshBoxes()
+	end
+})
+
+Tab2:AddSlider({
+	Name = "Hitbox Size Z",
+	Min = 0,
+	Max = 4,
+	Default = 4,
+	Color = Color3.fromRGB(255,255,255),
+	Increment = 0.5,
+	ValueName = "Studs",
+	Callback = function(Value)
+		ZSize = Value
+        RefreshBoxes()
+	end
+})
+
+coroutine.wrap(function()
+    while true do
+        wait(HitboxRefreshTime)
+        print("Hitbox refreshed")
+        if HitboxEnabled then
+            for v, i in pairs(game:GetService("Workspace"):GetChildren()) do
+                if i:FindFirstChild("Humanoid") then
+                    if i:FindFirstChild("HumanoidRootPart") then
+                        if not i:FindFirstChild("HedsOn") then
+                            if i ~= game.Players.LocalPlayer.Character then
+                                local HeadsParts = BigHeadsPart:Clone()
+                                HeadsParts.Size = Vector3.new(XSize, YSize, ZSize)
+                                HeadsParts.Parent = i
+                                HeadsParts.Orientation = i.HumanoidRootPart.Orientation
+
+                                table.insert(TablesOfHitboxes,HeadsParts)
+                                            
+                                local HedsOn = HedsOn:Clone()
+                                HedsOn.Parent = i
+                                            
+                                local Headswelding = Instance.new("Weld")
+                                Headswelding.Parent = HeadsParts
+                                Headswelding.Part0 = i.HumanoidRootPart
+                                Headswelding.Part1 = HeadsParts
+                                
+                                HeadsParts.Position = Vector3.new(i.HumanoidRootPart.Position.X,i.HumanoidRootPart.Position.Y - 0.4, i.HumanoidRootPart.Position.Z)
+                            end
+                        end 
+                    end
+                end
+            end
+        else
+            warn("Hitbox is off! the value given is ",HitboxEnabled)
+        end
+    end
+end)()
+
+local Middle = game.workspace.Ignore.LocalCharacter.Middle
+local UIS = game:GetService("UserInputService")
+
+local function viewportPoint(ret, ...)
+    if type(ret) == "boolean" then
+        local pos, vis = workspace.CurrentCamera:WorldToViewportPoint(...)
+        return pos
+    else
+        return workspace.CurrentCamera:WorldToViewportPoint(ret, ...)
+    end
+end
+
+local function GetPlayerFromUserId(GivenId)
+    for i,v in pairs(workspace:GetDescendants()) do
+        if v:FindFirstChild("Head") and v.Head:FindFirstChild("Nametag") then
+            local Nametag = v.Head:FindFirstChild("Nametag")
+            if Nametag then
+                local tag  = Nametag:FindFirstChild("tag")
+                local name = tag.Text
+                local player = game.Players:FindFirstChild(name)
+                if player and player.UserId == GivenId then
+                    return v
+                end
+            end
+        end
+    end
+end
+
+local mt = getrawmetatable(game)
+local namecall = mt.__namecall
+setreadonly(mt,false)
+
+mt.__namecall = function(self,...)
+	local args = {...}
+	local method = getnamecallmethod()
+
+    if method == "FireServer" and args[1] and args[2] and args[1] == 1 and typeof(args[2]) == "Vector3" and args[4] and SpinIsOn then
+		args[4] = value
+		value = value - SpinSpeed
+		return self.FireServer(self, unpack(args))
+    end
+
+    if method == "FireServer" and args[2] == "Fire" and AutoReloadOn then
+        coroutine.wrap(function()
+            wait(0.1)
+            local args = {
+                [1] = 104,
+                [2] = "Reload"
+            }
+            
+            game:GetService("ReplicatedStorage").e:FireServer(unpack(args))
+        end)()
+        return self.FireServer(self, unpack(args))
+    end
+
+    if method == "FireServer" and args[1] == 104 and args[2] == "Hit" and args[6] ~= "Head" and args[7] ~= nil and TargetHit ~= "Off" then
+
+        local randomizer = 2
+        if NotAllHeadShots == false then randomizer = 1 end
+
+        if randomizer == 2 and not GetChance() then
+            print("NOT HEADSHOT")
+            local Closest = GetPlayerFromUserId(args[5])
+            if Closest then
+                print("changed lookvector for anticheat")
+                local p = Instance.new("Part",workspace)
+                p.Anchored = true
+                p.Transparency = 0
+                p.Size = Vector3.new(0.5,0.5,0.5)
+                p.CanCollide = false
+                p.Position = args[7]
+                p.CFrame = CFrame.lookAt(p.Position, Closest.UpperTorso.Position)
+                args[7] = p.CFrame.LookVector
+                elseif not Closest then
+                local Closest2 = GetPlayer()
+                if Closest2 and Closest2:IsA("BasePart") then
+                    print("changed lookvector for anticheat v2")
+                    local p = Instance.new("Part",workspace)
+                    p.Anchored = true 
+                    p.Transparency = 0
+                    p.Size = Vector3.new(0.5,0.5,0.5)
+                    p.CanCollide = false
+                    p.Position = args[7]
+                    p.CFrame = CFrame.lookAt(p.Position, Closest2.UpperTorso.Position)
+                    args[7] = p.CFrame.LookVector
+                end
+            end
+            args[6] = "UpperTorso"
+            return self.FireServer(self, unpack(args))
+        end
+
+
+        local Closest = GetPlayerFromUserId(args[5])
+        if Closest then
+            print("changed lookvector for anticheat")
+            local p = Instance.new("Part",workspace)
+            p.Anchored = true
+            p.Transparency = 0
+            p.Size = Vector3.new(0.5,0.5,0.5)
+            p.CanCollide = false
+            p.Position = args[7]
+            p.CFrame = CFrame.lookAt(p.Position, Closest[TargetHit].Position)
+            args[7] = p.CFrame.LookVector
+            elseif not Closest then
+            local Closest2 = GetPlayer()
+            if Closest2 and Closest2:IsA("BasePart") then
+                print("changed lookvector for anticheat v2")
+                local p = Instance.new("Part",workspace)
+                p.Anchored = true
+                p.Transparency = 0
+                p.Size = Vector3.new(0.5,0.5,0.5)
+                p.CanCollide = false
+                p.Position = args[7]
+                p.CFrame = CFrame.lookAt(p.Position, Closest2[TargetHit].Position)
+                args[7] = p.CFrame.LookVector
+            end
+        end
+        args[6] = TargetHit
+        return self.FireServer(self, unpack(args))
+    end
+
+    if method == "FireServer" and args[1] == 104 and args[2] == "Hit" and args[5] ~= "Head" and args[7] == nil and TargetHit ~= "Off" then
+
+        local randomizer = 2
+        if NotAllHeadShots == false then randomizer = 1 end
+
+        if randomizer == 2 and not GetChance() then
+            print("NOT HEADSHOT")
+            local Closest = GetPlayerFromUserId(args[4])
+            if Closest then
+                print("changed lookvector for anticheat")
+                local p = Instance.new("Part",workspace)
+                p.Anchored = true
+                p.Transparency = 0
+                p.Size = Vector3.new(0.5,0.5,0.5)
+                p.CanCollide = false
+                p.Position = args[3]
+                p.CFrame = CFrame.lookAt(p.Position, Closest.UpperTorso.Position)
+                args[6] = p.CFrame.LookVector
+            elseif not Closest then
+                local Closest2 = GetPlayer()
+                if Closest2 then
+                    print("changed lookvector for anticheat v2")
+                    local p = Instance.new("Part",workspace)
+                    p.Anchored = true
+                    p.Transparency = 0
+                    p.Size = Vector3.new(0.5,0.5,0.5)
+                    p.CanCollide = false
+                    p.Position = args[3]
+                    p.CFrame = CFrame.lookAt(p.Position, Closest2.UpperTorso.Position)
+                    args[6] = p.CFrame.LookVector
+                end
+            end
+            args[5] = "UpperTorso"
+            return self.FireServer(self, unpack(args))
+        end
+
+        local Closest = GetPlayerFromUserId(args[4])
+        if Closest then
+            print("changed lookvector for anticheat")
+            local p = Instance.new("Part",workspace)
+            p.Anchored = true
+            p.Transparency = 0
+            p.Size = Vector3.new(0.5,0.5,0.5)
+            p.CanCollide = false
+            p.Position = args[3]
+            p.CFrame = CFrame.lookAt(p.Position, Closest[TargetHit].Position)
+            args[6] = p.CFrame.LookVector
+        elseif not Closest then
+            local Closest2 = GetPlayer()
+            if Closest2 then
+                print("changed lookvector for anticheat v2")
+                local p = Instance.new("Part",workspace)
+                p.Anchored = true
+                p.Transparency = 0
+                p.Size = Vector3.new(0.5,0.5,0.5)
+                p.CanCollide = false
+                p.Position = args[3]
+                p.CFrame = CFrame.lookAt(p.Position, Closest2[TargetHit].Position)
+                args[6] = p.CFrame.LookVector
+            end
+        end
+        args[5] = TargetHit
+        return self.FireServer(self, unpack(args))
+    end
+	return namecall(self,...)
+end
+
+OrionLib:Init()
+
+while true do
+    wait(3)
+    GetPlayers()
+
+    if PlayerEspOn then
+        RemoveAllHeadEsp()
+        wait()
+        print("Refreshed New Heads")
+         HeadEsp()
+    end
+end
